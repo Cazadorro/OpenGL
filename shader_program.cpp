@@ -92,3 +92,7 @@ void ShaderProgram::checkCompileErrors() {
                   << "\n -- --------------------------------------------------- -- " << std::endl;
     }
 }
+
+ShaderProgram::~ShaderProgram() {
+    glDeleteProgram(ID);
+}

@@ -13,6 +13,7 @@
 class Shader {
     GLuint m_gpu_shader_handle;
     GLenum m_type;
+    // need shared pointer to keep validity if we define equals operator
     bool m_valid = false;
     static const std::unordered_map<GLenum, std::string> shader_enum_string;
 public:

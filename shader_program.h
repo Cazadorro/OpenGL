@@ -5,8 +5,6 @@
 #include <glm/glm.hpp>
 
 #include <string>
-#include <fstream>
-#include <sstream>
 #include <iostream>
 
 class ShaderProgram {
@@ -17,6 +15,7 @@ public:
     // ------------------------------------------------------------------------
     ShaderProgram(const std::string &vertex_path, const std::string &fragment_path);
     ShaderProgram(const std::string &vertex_path, const std::string &fragment_path, const std::string &geometry_path);
+    ~ShaderProgram();
 
     // activate the shader
     // ------------------------------------------------------------------------
