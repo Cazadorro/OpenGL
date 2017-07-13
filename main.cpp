@@ -9,6 +9,7 @@
 #include "shader_program.h"
 #include "camera.h"
 #include "texture2d.h"
+#include "glutilprimitives.h"
 
 #include <iostream>
 
@@ -18,7 +19,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, const float deltaTime);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -28,11 +29,9 @@ const unsigned int SCR_HEIGHT = 600;
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
 
-// timing
-float deltaTime = 0.0f;    // time between current frame and last frame
-float lastFrame = 0.0f;
+
+
 
 int main() {
     // glfw: initialize and configure
@@ -57,7 +56,8 @@ int main() {
     glfwSetScrollCallback(window, scroll_callback);
 
     // tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    //GLFW_CURSOR_NORMAL
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -139,7 +139,7 @@ int main() {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
@@ -159,7 +159,9 @@ int main() {
     ourShader.setUniform("texture1", 0);
     ourShader.setUniform("texture2", 1);
 
-
+    // timing
+    float deltaTime = 0.0f;    // time between current frame and last frame
+    float lastFrame = 0.0f;
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
@@ -171,7 +173,7 @@ int main() {
 
         // input
         // -----
-        processInput(window);
+        processInput(window, deltaTime);
 
         // render
         // ------
@@ -188,7 +190,7 @@ int main() {
 
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f,
-                                                100.0f);
+                                                200.0f);
         ourShader.setUniform("projection", projection);
 
         // camera/view transformation
@@ -227,18 +229,18 @@ int main() {
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window) {
+void processInput(GLFWwindow *window, const float deltaTime) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
+        camera.moveForward(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        camera.moveBackward(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
+        camera.moveLeft(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+        camera.moveRight(deltaTime);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -253,6 +255,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+    static bool firstMouse = true;
     if (firstMouse) {
         lastX = xpos;
         lastY = ypos;
