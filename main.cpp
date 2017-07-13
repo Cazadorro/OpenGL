@@ -203,8 +203,8 @@ int main()
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
     ourShader.use();
-    ourShader.setInt("texture1", 0);
-    ourShader.setInt("texture2", 1);
+    ourShader.setUniform("texture1", 0);
+    ourShader.setUniform("texture2", 1);
 
 
     // render loop
@@ -238,11 +238,11 @@ int main()
 
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        ourShader.setMat4("projection", projection);
+        ourShader.setUniform("projection", projection);
 
         // camera/view transformation
         glm::mat4 view = camera.GetViewMatrix();
-        ourShader.setMat4("view", view);
+        ourShader.setUniform("view", view);
 
         // render boxes
         glBindVertexArray(VAO);
@@ -253,7 +253,7 @@ int main()
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            ourShader.setMat4("model", model);
+            ourShader.setUniform("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }

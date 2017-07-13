@@ -6,7 +6,6 @@
 #include "shader.h"
 
 
-
 ShaderProgram::ShaderProgram(const std::string &vertex_path, const std::string &fragment_path) {
 // 1. retrieve the vertex/fragment source code from filePath
     Shader vertex_shader(GL_VERTEX_SHADER, vertex_path);
@@ -21,6 +20,7 @@ ShaderProgram::ShaderProgram(const std::string &vertex_path, const std::string &
     // delete the shaders as they're linked into our program now and no longer necessary
     // RAII now handles this! :)
 }
+
 ShaderProgram::ShaderProgram(const std::string &vertex_path, const std::string &fragment_path,
                              const std::string &geometry_path) {
     // 1. retrieve the vertex/fragment source code from filePath
@@ -42,41 +42,44 @@ void ShaderProgram::use() {
     glUseProgram(ID);
 }
 
-// utility uniform functions
-void ShaderProgram::setBool(const std::string &name, bool value) const {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int) value);
+//template<typename T>
+//in case explict cast is required?
+//void setUniform(const std::string &uniform_name, const bool value);
+
+void ShaderProgram::setUniform(const std::string &uniform_name, const bool value) const {
+    glUniform1i(glGetUniformLocation(ID, uniform_name.c_str()), static_cast<int>(value));
 }
 
-void ShaderProgram::setInt(const std::string &name, int value) const {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+void ShaderProgram::setUniform(const std::string &uniform_name, const int value) const {
+    glUniform1i(glGetUniformLocation(ID, uniform_name.c_str()), value);
 }
 
-void ShaderProgram::setFloat(const std::string &name, float value) const {
-    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+void ShaderProgram::setUniform(const std::string &uniform_name, const float value) const {
+    glUniform1f(glGetUniformLocation(ID, uniform_name.c_str()), value);
 }
 
-void ShaderProgram::setVec2(const std::string &name, const glm::vec2 &value) const {
-    glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+void ShaderProgram::setUniform(const std::string &uniform_name, const glm::vec2 &value) const {
+    glUniform2fv(glGetUniformLocation(ID, uniform_name.c_str()), 1, &value[0]);
 }
 
-void ShaderProgram::setVec3(const std::string &name, const glm::vec3 &value) const {
-    glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+void ShaderProgram::setUniform(const std::string &uniform_name, const glm::vec3 &value) const {
+    glUniform3fv(glGetUniformLocation(ID, uniform_name.c_str()), 1, &value[0]);
 }
 
-void ShaderProgram::setVec4(const std::string &name, const glm::vec4 &value) const {
-    glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+void ShaderProgram::setUniform(const std::string &uniform_name, const glm::vec4 &value) const {
+    glUniform4fv(glGetUniformLocation(ID, uniform_name.c_str()), 1, &value[0]);
 }
 
-void ShaderProgram::setMat2(const std::string &name, const glm::mat2 &mat) const {
-    glUniformMatrix2fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+void ShaderProgram::setUniform(const std::string &uniform_name, const glm::mat2 &value) const {
+    glUniformMatrix2fv(glGetUniformLocation(ID, uniform_name.c_str()), 1, GL_FALSE, &value[0][0]);
 }
 
-void ShaderProgram::setMat3(const std::string &name, const glm::mat3 &mat) const {
-    glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+void ShaderProgram::setUniform(const std::string &uniform_name, const glm::mat3 &value) const {
+    glUniformMatrix3fv(glGetUniformLocation(ID, uniform_name.c_str()), 1, GL_FALSE, &value[0][0]);
 }
 
-void ShaderProgram::setMat4(const std::string &name, const glm::mat4 &mat) const {
-    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+void ShaderProgram::setUniform(const std::string &uniform_name, const glm::mat4 &value) const {
+    glUniformMatrix4fv(glGetUniformLocation(ID, uniform_name.c_str()), 1, GL_FALSE, &value[0][0]);
 }
 
 void ShaderProgram::checkCompileErrors() {
@@ -89,4 +92,3 @@ void ShaderProgram::checkCompileErrors() {
                   << "\n -- --------------------------------------------------- -- " << std::endl;
     }
 }
-
