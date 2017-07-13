@@ -15,7 +15,8 @@ public:
 
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
-    ShaderProgram(const char *vertexPath, const char *fragmentPath, const char *geometryPath = nullptr);
+    ShaderProgram(const std::string &vertex_path, const std::string &fragment_path);
+    ShaderProgram(const std::string &vertex_path, const std::string &fragment_path, const std::string &geometry_path);
 
     // activate the shader
     // ------------------------------------------------------------------------
@@ -43,7 +44,7 @@ public:
 private:
     // utility function for checking shader compilation/linking errors.
     // ------------------------------------------------------------------------
-    void checkCompileErrors(GLuint shader, std::string type);
+    void checkCompileErrors();
 };
 
 #endif
