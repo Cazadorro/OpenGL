@@ -33,7 +33,7 @@ Texture2D::Texture2D(const unsigned char *data, const TextureSizeParams &size_pa
     glGenTextures(1, &m_gpu_texture_handle);
     bind();
     setParameters(texture_params);
-    setData(data, TextureSizeParams());
+    setData(data, size_params);
 }
 
 void Texture2D::setData(const unsigned char *data, const TextureSizeParams &size_params) {
@@ -57,10 +57,10 @@ void Texture2D::setParameter(const GLenum parameter, const GLint value) {
 }
 
 void Texture2D::setParameters(const TextureViewParams &texture_params) {
-    setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
-    setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
-    setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    setParameter(GL_TEXTURE_WRAP_S, texture_params.texture_wrap_s);
+    setParameter(GL_TEXTURE_WRAP_T, texture_params.texture_wrap_t);
+    setParameter(GL_TEXTURE_MIN_FILTER, texture_params.texture_min_filter);
+    setParameter(GL_TEXTURE_MAG_FILTER, texture_params.texture_mag_filter);
 }
 
 

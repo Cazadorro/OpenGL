@@ -10,6 +10,8 @@
 #include "camera.h"
 #include "texture2d.h"
 #include "glutilprimitives.h"
+#include "simplexnoise.h"
+#include "gradientnoise.h"
 
 #include <iostream>
 
@@ -76,49 +78,7 @@ int main() {
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
-    float vertices[] = {
-            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-            0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-            -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-
-            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-            -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-            0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-            0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-            -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
-    };
     // world space positions of our cubes
     glm::vec3 cubePositions[] = {
             glm::vec3(0.0f, 0.0f, 0.0f),
@@ -139,7 +99,7 @@ int main() {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad_verticies), quad_verticies, GL_STATIC_DRAW);
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
@@ -150,14 +110,58 @@ int main() {
 
     // load and create a texture
     // -------------------------
-    Texture2D texture1("../resources/textures/container.jpg", {GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR});
-    Texture2D texture2("../resources/textures/awesomeface.png", {GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR});
+    TextureViewParams default_tex_params = {GL_REPEAT, GL_REPEAT, GL_LINEAR, GL_LINEAR};
+    TextureViewParams special_tex_params = {GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST};
+    Texture2D texture1("../resources/textures/container.jpg", default_tex_params);
+    Texture2D texture2("../resources/textures/awesomeface.png", default_tex_params);
+
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
     ourShader.use();
     ourShader.setUniform("texture1", 0);
     ourShader.setUniform("texture2", 1);
+//    SimplexNoise_octave temp_1(1);
+//    SimplexNoise_octave temp_2(2);
+//    SimplexNoise_octave temp_3(3);
+    GradientNoise temp_1(32457);
+    //GradientNoise temp_2(2);
+    //GradientNoise temp_3(3);
+
+    int width = 64;
+    int height = 64;
+    unsigned char temp_texture[width*height * 4];
+    double temp_values[width*height];
+    //unsigned char *temp_texture = new unsigned char[width*height * 4];
+    //double octaves[6] = {16,32,64,128,256,512};
+    double octaves[6] = {1,2,4,128,256,512};
+
+    for( int i = 0; i < height; i++){
+        for(int j = 0; j < width; j++){
+            double d_noise = 0;
+            d_noise += temp_1.noise(j/octaves[0], i/octaves[0]);
+            d_noise += temp_1.noise(j/octaves[1], i/octaves[1]);
+            d_noise += temp_1.noise(j/octaves[2], i/octaves[2]);
+            //d_noise += temp_1.noise(j/octaves[3], i/octaves[3]);
+            //d_noise += temp_2.noise(j/octaves[1], i/octaves[1]);
+            //d_noise += temp_3.noise(j/octaves[2], i/octaves[2]);
+            //d_noise += temp.noise(j/octaves[2], i/octaves[2]);
+            //d_noise += temp.noise(j/octaves[3], i/octaves[3]);
+            //d_noise += temp.noise(j/octaves[4], i/octaves[4]);
+            //d_noise += temp.noise(j/octaves[5], i/octaves[5]);
+            d_noise/=3;
+            temp_values[j + (i * width)] = d_noise;
+            uint8_t noise = static_cast<uint8_t>(((d_noise * 128.0) + 128.0));
+            temp_texture[j*4 + (i * width * 4) + 0] = (noise);
+            temp_texture[j*4 + (i * width * 4) + 1] = (noise);
+            temp_texture[j*4 + (i * width * 4) + 2] = (noise);
+            temp_texture[j*4 + (i * width * 4) + 3] = (255);
+        }
+    }
+
+    TextureSizeParams size_params = {width, height, GL_RGBA, GL_RGBA};
+    Texture2D texture3(temp_texture, size_params,special_tex_params);
+
 
     // timing
     float deltaTime = 0.0f;    // time between current frame and last frame
@@ -181,8 +185,8 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // bind textures on corresponding texture units
-        texture1.activate(GL_TEXTURE0);
-        texture2.activate(GL_TEXTURE1);
+        texture3.activate(GL_TEXTURE0);
+        texture3.activate(GL_TEXTURE1);
 
         glm::vec4 temp{1, 2, 3, 4};
         // activate shader
@@ -199,7 +203,8 @@ int main() {
 
         // render boxes
         glBindVertexArray(VAO);
-        for (unsigned int i = 0; i < 10; i++) {
+        //10
+        for (unsigned int i = 0; i < 1; i++) {
             // calculate the model matrix for each object and pass it to shader before drawing
             glm::mat4 model;
             model = glm::translate(model, cubePositions[i]);
@@ -207,7 +212,7 @@ int main() {
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             ourShader.setUniform("model", model);
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
