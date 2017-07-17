@@ -6,6 +6,7 @@
 
 double nonLinearActivationFunction(double value) {
     return value * value * value * (value * (value * 6.0 - 15.0) + 10.0);
+    //return 6*value*value*value*value*value - 15*value*value*value*value + 10*value*value*value;
 }
 
 double linearActivationFunction(double value) {
@@ -109,6 +110,36 @@ std::uint64_t XorTestHash::operator()(std::uint64_t a) {
 }
 
 std::uint64_t XorTestHash::operator()(std::uint32_t x, std::uint32_t y, std::uint64_t offset) {
+    seed(x, y, offset);
+    return this->operator()();
+}
+
+void Xor64TestHash::seed(std::uint64_t a) {
+    m_seed = a;
+}
+
+void Xor64TestHash::seed(std::uint32_t x, std::uint32_t y, std::uint64_t offset) {
+    std::uint64_t mix = x + (std::uint64_t(y) << 32) + offset;
+    seed(mix);
+}
+
+std::uint64_t Xor64TestHash::operator()() {
+    m_seed = (~m_seed) + (m_seed << 21); // key = (key << 21) - key - 1;
+    m_seed = m_seed ^ (m_seed >> 24);
+    m_seed = (m_seed + (m_seed << 3)) + (m_seed << 8); // key * 265
+    m_seed = m_seed ^ (m_seed >> 14);
+    m_seed = (m_seed + (m_seed << 2)) + (m_seed << 4); // key * 21
+    m_seed = m_seed ^ (m_seed >> 28);
+    m_seed = m_seed + (m_seed << 31);
+    return m_seed;
+}
+
+std::uint64_t Xor64TestHash::operator()(std::uint64_t a) {
+    seed(a);
+    return this->operator()();
+}
+
+std::uint64_t Xor64TestHash::operator()(std::uint32_t x, std::uint32_t y, std::uint64_t offset) {
     seed(x, y, offset);
     return this->operator()();
 }

@@ -68,6 +68,19 @@ public:
     std::uint64_t operator()(std::uint32_t x, std::uint32_t y, std::uint64_t offset = 0);
 };
 
+class Xor64TestHash {
+    std::uint64_t m_seed;
+public:
+    void seed(std::uint64_t a);
+
+    void seed(std::uint32_t x, std::uint32_t y, std::uint64_t offset = 0);
+
+    std::uint64_t operator()();
+
+    std::uint64_t operator()(std::uint64_t a);
+
+    std::uint64_t operator()(std::uint32_t x, std::uint32_t y, std::uint64_t offset = 0);
+};
 
 class LinearCongruentialGen64 {
 public:
@@ -105,8 +118,12 @@ public:
 
 template<class PrngHasher>
 class GradientFixed4Contributor {
-    const std::array<glm::vec2, 4> vector_choice = {glm::vec2(1.0, 1.0), glm::vec2(-1.0, 1.0), glm::vec2(1.0, -1.0),
-                                                    glm::vec2(-1.0, -1.0)};
+//    const std::array<glm::vec2, 4> vector_choice = {glm::vec2(1.0, 1.0), glm::vec2(-1.0, 1.0), glm::vec2(1.0, -1.0),
+//                                                    glm::vec2(-1.0, -1.0)};
+    const std::array<glm::vec2, 8> vector_choice = {glm::vec2(1.0, 1.0), glm::vec2(-1.0, 1.0), glm::vec2(1.0, -1.0),
+                                                    glm::vec2(-1.0, -1.0), glm::vec2(sqrt(2), 0),
+                                                    glm::vec2(-sqrt(2), 0), glm::vec2(0, sqrt(2)),
+                                                    glm::vec2(0, -sqrt(2))};
     PrngHasher m_prng_hasher;
     std::uint64_t m_mod_val;
     std::uint64_t m_and_var;
@@ -116,7 +133,24 @@ public:
     }
 
     double operator()(std::uint32_t x, std::uint32_t y, double dist_x, double dist_y, std::uint64_t offset = 0) {
-        return glm::dot(vector_choice[m_prng_hasher(x, y, offset) & 3], {dist_x, dist_y});
+        double temp = glm::dot(vector_choice[(m_prng_hasher(x, y, offset) % 257) & 3], {dist_x, dist_y});
+
+        return ((temp) * 128.0) + 128.0;
+    }
+};
+
+template<class PrngHasher>
+class ValueFixedValueContributor {
+    PrngHasher m_prng_hasher;
+    std::uint64_t m_mod_val;
+    std::uint64_t m_and_var;
+public:
+    ValueFixedValueContributor(std::uint64_t mod_var) {
+        m_mod_val = mod_var;
+    }
+
+    double operator()(std::uint32_t x, std::uint32_t y, double dist_x, double dist_y, std::uint64_t offset = 0) {
+        return ((m_prng_hasher(x, y, offset) & 255) * 1.0f);
     }
 };
 

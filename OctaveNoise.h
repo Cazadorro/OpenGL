@@ -30,9 +30,9 @@ public:
         double corner_3_contrib; // bottom right
 
         corner_0_contrib = m_contributor(x, y, dist_x, dist_y);
-        corner_1_contrib = m_contributor(x, y + 1.0, dist_x, dist_y - 1.0);
-        corner_2_contrib = m_contributor(x + 1.0, y + 1.0, dist_x - 1.0, dist_y - 1.0);
-        corner_3_contrib = m_contributor(x + 1.0, y, dist_x + 1.0, dist_y);
+        corner_1_contrib = m_contributor(x, y + 1, dist_x, dist_y - 1.0);
+        corner_2_contrib = m_contributor(x + 1, y + 1, dist_x - 1.0, dist_y - 1.0);
+        corner_3_contrib = m_contributor(x + 1, y, dist_x - 1.0, dist_y);
 
         double u = activator(dist_x);
         double v = activator(dist_y);

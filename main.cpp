@@ -129,33 +129,37 @@ int main() {
 //    SimplexNoise_octave temp_2(2);
 //    SimplexNoise_octave temp_3(3);
     //GradientNoise temp_1(0);
-    OctaveNoise<GradientFixed4Contributor<XorTestHash>, linearActivationFunction, cosineInterpolate>
+    OctaveNoise<GradientFixed4Contributor<XorTestHash>, nonLinearActivationFunction, linearInterpolate>
             temp_1{GradientFixed4Contributor<XorTestHash>(1)};
+//    OctaveNoise<ValueFixedValueContributor<Xor64TestHash>, nonLinearActivationFunction, linearInterpolate>
+//            temp_1{ValueFixedValueContributor<Xor64TestHash>(1)};
 
     //GradientNoise temp_2(2);
     //GradientNoise temp_3(3);
 
-    int width = 1024;
-    int height = 1024;
+    int width = 4096;
+    int height = 4096;
     //unsigned char temp_texture[width*height * 4];
     //double temp_values[width*height];
     unsigned char *temp_texture = new unsigned char[width*height * 4];
     //double octaves[6] = {16,32,64,128,256,512};
-    double octaves[12] = {1,2,3,5,4,8,16,32,64,128,256,512};
+    double octaves[16] = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768};
 
 
 
-    int num_octaves = 12;
+    int num_octaves = 17;
+    int min_octave = 0;
     for( int i = 0; i < height; i++){
         for(int j = 0; j < width; j++){
             double d_noise = 0;
 
-            for(int oct = 0; oct < num_octaves; oct++){
-                d_noise+= temp_1.noise(j/(8*octaves[oct]), i/(8*octaves[oct]))/octaves[oct];
+            for(int oct = min_octave; oct <= num_octaves; oct++){
+                d_noise+= temp_1.noise(double(j)/64*(1<<oct), double(i)/64*(1<<oct))/(1<<oct);
             }
-            d_noise*= 0.7;
+            d_noise*= 0.5;
             //temp_values[j + (i * width)] = d_noise;
-            uint8_t noise = static_cast<uint8_t>(((d_noise * 128.0) + 128.0));
+            //uint8_t noise = static_cast<uint8_t>(((d_noise * 128.0) + 128.0));
+            uint8_t noise = static_cast<uint8_t>(rint(d_noise));
             temp_texture[j*4 + (i * width * 4) + 0] = (noise);
             temp_texture[j*4 + (i * width * 4) + 1] = (noise);
             temp_texture[j*4 + (i * width * 4) + 2] = (noise);
