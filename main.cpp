@@ -11,7 +11,11 @@
 #include "texture2d.h"
 #include "glutilprimitives.h"
 #include "simplexnoise.h"
-#include "gradientnoise.h"
+//#include "gradientnoise.h"
+
+#include "contrib_active_interp.h"
+#include "OctaveNoise.h"
+
 
 #include <iostream>
 
@@ -124,34 +128,32 @@ int main() {
 //    SimplexNoise_octave temp_1(1);
 //    SimplexNoise_octave temp_2(2);
 //    SimplexNoise_octave temp_3(3);
-    GradientNoise temp_1(0);
+    //GradientNoise temp_1(0);
+    OctaveNoise<GradientFixed4Contributor<XorTestHash>, linearActivationFunction, cosineInterpolate>
+            temp_1{GradientFixed4Contributor<XorTestHash>(1)};
+
     //GradientNoise temp_2(2);
     //GradientNoise temp_3(3);
 
-    int width = 2048;
-    int height = 2048;
+    int width = 1024;
+    int height = 1024;
     //unsigned char temp_texture[width*height * 4];
     //double temp_values[width*height];
     unsigned char *temp_texture = new unsigned char[width*height * 4];
     //double octaves[6] = {16,32,64,128,256,512};
-    double octaves[7] = {2,4,8,16,32,64,128};
+    double octaves[12] = {1,2,3,5,4,8,16,32,64,128,256,512};
 
+
+
+    int num_octaves = 12;
     for( int i = 0; i < height; i++){
         for(int j = 0; j < width; j++){
             double d_noise = 0;
-            d_noise += temp_1.noise(j/octaves[0], i/octaves[0]);
-            d_noise += temp_1.noise(j/octaves[1], i/octaves[1]);
-            d_noise += temp_1.noise(j/octaves[2], i/octaves[2]);
-            d_noise += temp_1.noise(j/octaves[3], i/octaves[3]);
-            d_noise += temp_1.noise(j/octaves[4], i/octaves[4]);
-            d_noise += temp_1.noise(j/octaves[5], i/octaves[5]);
-            d_noise += temp_1.noise(j/octaves[6], i/octaves[6]);
-            //d_noise += temp_3.noise(j/octaves[2], i/octaves[2]);
-            //d_noise += temp.noise(j/octaves[2], i/octaves[2]);
-            //d_noise += temp.noise(j/octaves[3], i/octaves[3]);
-            //d_noise += temp.noise(j/octaves[4], i/octaves[4]);
-            //d_noise += temp.noise(j/octaves[5], i/octaves[5]);
-            d_noise/=4;
+
+            for(int oct = 0; oct < num_octaves; oct++){
+                d_noise+= temp_1.noise(j/(8*octaves[oct]), i/(8*octaves[oct]))/octaves[oct];
+            }
+            d_noise*= 0.7;
             //temp_values[j + (i * width)] = d_noise;
             uint8_t noise = static_cast<uint8_t>(((d_noise * 128.0) + 128.0));
             temp_texture[j*4 + (i * width * 4) + 0] = (noise);
