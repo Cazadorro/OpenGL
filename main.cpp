@@ -15,7 +15,7 @@
 
 #include "contrib_active_interp.h"
 #include "OctaveNoise.h"
-
+#include "murmurhash3.h"
 
 #include <iostream>
 
@@ -129,21 +129,17 @@ int main() {
 //    SimplexNoise_octave temp_2(2);
 //    SimplexNoise_octave temp_3(3);
     //GradientNoise temp_1(0);
-    OctaveNoise<GradientFixed4Contributor<XorTestHash>, nonLinearActivationFunction, linearInterpolate>
-            temp_1{GradientFixed4Contributor<XorTestHash>(1)};
-//    OctaveNoise<ValueFixedValueContributor<Xor64TestHash>, nonLinearActivationFunction, linearInterpolate>
-//            temp_1{ValueFixedValueContributor<Xor64TestHash>(1)};
+//    OctaveNoise<GradientFixed4Contributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
+//            temp_1{GradientFixed4Contributor<MurmurHash3_64bit>(1)};
+    OctaveNoise<ValueFixedValueContributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
+            temp_1{ValueFixedValueContributor<MurmurHash3_64bit>(1)};
 
-    //GradientNoise temp_2(2);
-    //GradientNoise temp_3(3);
-
-    int width = 4096;
-    int height = 4096;
+    int width = 1024;
+    int height = 1024;
     //unsigned char temp_texture[width*height * 4];
     //double temp_values[width*height];
     unsigned char *temp_texture = new unsigned char[width*height * 4];
     //double octaves[6] = {16,32,64,128,256,512};
-    double octaves[16] = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768};
 
 
 
