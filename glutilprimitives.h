@@ -5,7 +5,7 @@
 #ifndef GLPROJECT_GLUTILPRIMITIVES_H
 #define GLPROJECT_GLUTILPRIMITIVES_H
 
-
+#include <vector>
 const float cube_vertices[] = {
         -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
         1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
@@ -58,6 +58,32 @@ const float quad_verticies[] = {
         -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
         -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
 };
+
+const std::vector<float> strip_verticies = {
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+
+
+};
+
+const float strip_verticies_f[] = {
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+
+};
+
+//const float strip_verticies_f[] = {
+//        -0.25f, 0.25f, -0.25f,
+//        -0.25f, -0.25f, -0.25f,
+//        0.25f, 0.25f, -0.25f,
+//        0.25f, -0.25f, -0.25f,
+//
+//};
+
 
 
 #endif //GLPROJECT_GLUTILPRIMITIVES_H

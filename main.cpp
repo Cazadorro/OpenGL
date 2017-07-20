@@ -36,6 +36,31 @@ Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
+
+float ** createMesh(int width, int height){
+    float ** squares = new float*[width * height];
+    for (int i = 0; i < height; i++){
+        for(int j = 0; j < width; j++){
+            float * temp = new float[12];
+            temp[0] = j;
+            temp[1] = i;
+            temp[2] = 1;
+            temp[3] = j+1;
+            temp[4] = i;
+            temp[5] = 1;
+            temp[6] = j;
+            temp[7] = i+1;
+            temp[8] = 1;
+            temp[9] = j+1;
+            temp[10] = i+1;
+            temp[11] = 1;
+            squares[j + (i*width)] = temp;
+        }
+    }
+    return squares;
+}
+
+
 unsigned char *createTextureMemory(int width, int height){
     return new unsigned char[width*height * 4];
 }
@@ -49,7 +74,7 @@ void accumTextureVals(int i, int j, int width, unsigned char* temp_texture, doub
 }
 
 double accumulateNoise(int min_oct, int max_oct, int i, int j){
-   static BaryNoise<GradientFixed4Contributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
+   static OctaveNoise<GradientFixed4Contributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
             temp_1{GradientFixed4Contributor<MurmurHash3_64bit>(1)};
 //    OctaveNoise<ValueFixedValueContributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
 //            temp_1{ValueFixedValueContributor<MurmurHash3_64bit>(1)};
@@ -142,15 +167,17 @@ int main() {
 
     glBindVertexArray(VAO);
 
+    std::vector<float> temp = strip_verticies;
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quad_verticies), quad_verticies, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, temp.size() * sizeof(GLfloat), temp.data(), GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
     // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+//    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
+//    glEnableVertexAttribArray(1);
 
     // load and create a texture
     // -------------------------
@@ -167,8 +194,8 @@ int main() {
     ourShader.setUniform("texture2", 1);
 
 
-    int width = 1024;
-    int height = 1024;
+    int width = 64;
+    int height = 64;
     unsigned char *temp_texture = createTextureMemory(width, height);
     mainfunc(width, height, temp_texture);
 
@@ -176,6 +203,7 @@ int main() {
     Texture2D texture3(temp_texture, size_params,special_tex_params);
 
 
+    float** mesh = createMesh(width,height);
     // timing
     float deltaTime = 0.0f;    // time between current frame and last frame
     float lastFrame = 0.0f;
@@ -201,7 +229,6 @@ int main() {
         texture3.activate(GL_TEXTURE0);
         texture3.activate(GL_TEXTURE1);
 
-        glm::vec4 temp{1, 2, 3, 4};
         // activate shader
         ourShader.use();
 
@@ -216,16 +243,50 @@ int main() {
 
         // render boxes
         glBindVertexArray(VAO);
+
         //10
-        for (unsigned int i = 0; i < 1; i++) {
+//        for (unsigned int i = 0; i < 1; i++) {
+//            // calculate the model matrix for each object and pass it to shader before drawing
+//            glm::mat4 model;
+//            model = glm::translate(model, cubePositions[i]);
+//            float angle = 20.0f * i;
+//            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+//            ourShader.setUniform("model", model);
+//
+//            glDrawArrays(GL_TRIANGLES, 0, 6);
+//        }
+        for (unsigned int i = 0; i < width * height; i++) {
+
+            int x = i%width;
+            int y = i/width;
+            int x1 = x+1;
+            int y1 = y+1;
+            if(x >= width){
+                x1 = x;
+            }
+            if(y >= height){
+                y1 = x;
+            }
+
+            temp[2] = temp_texture[x + ((y1)*width)]/128.0;
+            temp[5] = temp_texture[x + (y*width)]/128.0;
+            temp[8] = temp_texture[x1 + ((y1)*width)]/128.0;
+            temp[11] = temp_texture[x1 + (y*width)]/128.0;
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, temp.size() * sizeof(GLfloat), temp.data(), GL_STATIC_DRAW);
+//
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+            glEnableVertexAttribArray(0);
             // calculate the model matrix for each object and pass it to shader before drawing
             glm::mat4 model;
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
+            //model = glm::translate(model, cubePositions[0]);
+            model = glm::translate(model, glm::vec3(x*2, y*2, 0));
+            float angle = 20.0f * 0;
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             ourShader.setUniform("model", model);
 
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
