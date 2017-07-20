@@ -133,7 +133,7 @@ public:
     }
 
     double operator()(std::uint32_t x, std::uint32_t y, double dist_x, double dist_y, std::uint64_t offset = 0) {
-        double temp = glm::dot(vector_choice[(m_prng_hasher(x, y, offset) % 257) & 3], {dist_x, dist_y});
+        double temp = glm::dot(vector_choice[m_prng_hasher(x, y, offset)& 3], {dist_x, dist_y});
 
         return ((temp) * 128.0) + 128.0;
     }
@@ -150,7 +150,7 @@ public:
     }
 
     double operator()(std::uint32_t x, std::uint32_t y, double dist_x, double dist_y, std::uint64_t offset = 0) {
-        return ((m_prng_hasher(x, y, offset) & 255) * 1.0f);
+        return ((m_prng_hasher(x, y, offset) & 255));
     }
 };
 
