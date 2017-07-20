@@ -144,6 +144,7 @@ int main() {
     // build and compile our shader zprogram
     // ------------------------------------
     ShaderProgram ourShader("../camera.vert", "../camera.frag");
+    ShaderProgram ourShader_tex("../camera_text.vert", "../camera_text.frag");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -161,15 +162,29 @@ int main() {
             glm::vec3(1.5f, 0.2f, -1.5f),
             glm::vec3(-1.3f, 1.0f, -1.5f)
     };
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    unsigned int VBO_1, VBO_0, VAO_1, VAO_0;
+    glGenVertexArrays(1, &VAO_1);
+    glGenVertexArrays(1, &VAO_0);
+    glGenBuffers(1, &VBO_1);
+    glGenBuffers(1, &VBO_0);
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(VAO_0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_0);
+    glBufferData(GL_ARRAY_BUFFER, 30*sizeof(GLfloat), quad_verticies, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(VAO_1);
 
     std::vector<float> temp = strip_verticies;
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_1);
     glBufferData(GL_ARRAY_BUFFER, temp.size() * sizeof(GLfloat), temp.data(), GL_STATIC_DRAW);
 
     // position attribute
@@ -178,6 +193,7 @@ int main() {
     // texture coord attribute
 //    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
 //    glEnableVertexAttribArray(1);
+
 
     // load and create a texture
     // -------------------------
@@ -189,9 +205,9 @@ int main() {
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
-    ourShader.use();
-    ourShader.setUniform("texture1", 0);
-    ourShader.setUniform("texture2", 1);
+    ourShader_tex.use();
+    ourShader_tex.setUniform("texture1", 0);
+    ourShader_tex.setUniform("texture2", 1);
 
 
     int width = 64;
@@ -242,7 +258,7 @@ int main() {
         ourShader.setUniform("view", view);
 
         // render boxes
-        glBindVertexArray(VAO);
+        glBindVertexArray(VAO_1);
 
         //10
 //        for (unsigned int i = 0; i < 1; i++) {
@@ -261,19 +277,42 @@ int main() {
             int y = i/width;
             int x1 = x+1;
             int y1 = y+1;
+            float temp1 = temp_texture[x*4 + ((y1)*width*4)];
+            float temp2;
+            float temp3;
+            float temp4;
             if(x >= width){
-                x1 = x;
+                temp3 = 0;
+                temp4 = 0;
+            }
+            else{
+                temp4 = temp_texture[x1*4 + (y*width*4)];
+                if(y >= height){
+                    temp3 = 0;
+                }
+                else{
+                    temp3 = temp_texture[x1*4 + ((y1)*width*4)];
+                }
             }
             if(y >= height){
-                y1 = x;
+                temp2 = 0;
+            }
+            else{
+                temp2 = temp_texture[x*4 + (y*width*4)];
             }
 
-            temp[2] = temp_texture[x + ((y1)*width)]/128.0;
-            temp[5] = temp_texture[x + (y*width)]/128.0;
-            temp[8] = temp_texture[x1 + ((y1)*width)]/128.0;
-            temp[11] = temp_texture[x1 + (y*width)]/128.0;
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferData(GL_ARRAY_BUFFER, temp.size() * sizeof(GLfloat), temp.data(), GL_STATIC_DRAW);
+//            temp[2] = temp_texture[x + ((y1)*width)]/128.0;
+//            temp[5] = temp_texture[x + (y*width)]/128.0;
+//            temp[8] = temp_texture[x1 + ((y1)*width)]/128.0;
+//            temp[11] = temp_texture[x1 + (y*width)]/128.0;
+
+            temp[2] = temp1;
+            temp[5] = temp2;
+            temp[8] = temp3;
+            temp[11] = temp4;
+
+            glBindBuffer(GL_ARRAY_BUFFER, VBO_1);
+            glBufferData(GL_ARRAY_BUFFER, temp.size() * sizeof(GLfloat), temp.data(), GL_DYNAMIC_DRAW);
 //
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
             glEnableVertexAttribArray(0);
@@ -286,8 +325,24 @@ int main() {
             ourShader.setUniform("model", model);
 
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            //glDrawArrays(GL_TRIANGLES, 0, 6);
 
         }
+        ourShader_tex.use();
+        ourShader_tex.setUniform("projection", projection);
+        ourShader_tex.setUniform("view", view);
+        glBindVertexArray(VAO_0);
+        for (unsigned int i = 0; i < 1; i++) {
+            // calculate the model matrix for each object and pass it to shader before drawing
+            glm::mat4 model;
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            ourShader_tex.setUniform("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -297,8 +352,10 @@ int main() {
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &VAO_0);
+    glDeleteVertexArrays(1, &VAO_1);
+    glDeleteBuffers(1, &VBO_0);
+    glDeleteBuffers(1, &VBO_1);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
