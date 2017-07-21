@@ -80,12 +80,12 @@ double accumulateNoise(int min_oct, int max_oct, int i, int j){
 //            temp_1{ValueFixedValueContributor<MurmurHash3_64bit>(1)};
     double d_noise = 0;
     for(int oct = min_oct; oct <= max_oct; oct++){
-        d_noise+= temp_1.noise(j/64.0f*(1<<oct), i/64.0f*(1<<oct))/(1<<oct);
+        d_noise+= temp_1.noise(j/256.0f*(1<<oct), i/256.0f*(1<<oct))/(1<<oct);
     }
     return d_noise;
 }
 
-void mainfunc(int width, int height, unsigned char* temp_texture){
+void mainfunc(int width, int height, unsigned char* temp_texture, std::vector<float>& verticies, const glm::vec3 scale){
 //    OctaveNoise<GradientFixed4Contributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
 //        temp_1{GradientFixed4Contributor<MurmurHash3_64bit>(1)};
 //    OctaveNoise<ValueFixedValueContributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
@@ -100,7 +100,25 @@ void mainfunc(int width, int height, unsigned char* temp_texture){
             d_noise += accumulateNoise(min_oct, max_oct, i, j);
             d_noise*= 0.5;
             accumTextureVals(i, j, width, temp_texture, d_noise);
+            verticies.push_back(float(j)*scale.x);
+            verticies.push_back(float(d_noise)*scale.z);
+            verticies.push_back(float(i)*scale.y);
+
         }
+    }
+}
+
+void genindicies(int width, int height, std::vector<int>& indices){
+    bool first = true;
+    for( int y = 0; y < height-1; y++) {
+        indices.push_back(y * width);
+        indices.push_back(y * width);
+        for (int x = 0; x < (width-1);  x++) {
+            indices.push_back(x+((y+1)*width));
+            indices.push_back(x+1+(y*width));
+        }
+        indices.push_back((width-1) + ((y+1) * width));
+        indices.push_back((width-1) + ((y+1) * width));
     }
 }
 
@@ -162,11 +180,23 @@ int main() {
             glm::vec3(1.5f, 0.2f, -1.5f),
             glm::vec3(-1.3f, 1.0f, -1.5f)
     };
-    unsigned int VBO_1, VBO_0, VAO_1, VAO_0;
+
+    int width = 1024;
+    int height = 1024;
+    unsigned char *temp_texture = createTextureMemory(width, height);
+    std::vector<int> indices;
+    std::vector<float> verticies;
+    glm::vec3 scale = {0.1, 0.1, 0.1};
+    mainfunc(width, height, temp_texture, verticies, scale);
+    genindicies(width, height, indices);
+
+
+    unsigned int VBO_1, VBO_0, VAO_1, VAO_0, EBO_1;
     glGenVertexArrays(1, &VAO_1);
     glGenVertexArrays(1, &VAO_0);
     glGenBuffers(1, &VBO_1);
     glGenBuffers(1, &VBO_0);
+    glGenBuffers(1, &EBO_1);
 
     glBindVertexArray(VAO_0);
 
@@ -185,7 +215,10 @@ int main() {
     std::vector<float> temp = strip_verticies;
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO_1);
-    glBufferData(GL_ARRAY_BUFFER, temp.size() * sizeof(GLfloat), temp.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, verticies.size() * sizeof(GLfloat), verticies.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_1);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLfloat), indices.data(), GL_STATIC_DRAW);
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
@@ -210,10 +243,7 @@ int main() {
     ourShader_tex.setUniform("texture2", 1);
 
 
-    int width = 64;
-    int height = 64;
-    unsigned char *temp_texture = createTextureMemory(width, height);
-    mainfunc(width, height, temp_texture);
+
 
     TextureSizeParams size_params = {width, height, GL_RGBA, GL_RGBA};
     Texture2D texture3(temp_texture, size_params,special_tex_params);
@@ -271,60 +301,60 @@ int main() {
 //
 //            glDrawArrays(GL_TRIANGLES, 0, 6);
 //        }
-        for (unsigned int i = 0; i < width * height; i++) {
-
-            int x = i%width;
-            int y = i/width;
-            int x1 = x+1;
-            int y1 = y+1;
-            float temp1 = temp_texture[x*4 + ((y1)*width*4)];
-            float temp2;
-            float temp3;
-            float temp4;
-            if(x >= width){
-                temp3 = 0;
-                temp4 = 0;
-            }
-            else{
-                temp4 = temp_texture[x1*4 + (y*width*4)];
-                if(y >= height){
-                    temp3 = 0;
-                }
-                else{
-                    temp3 = temp_texture[x1*4 + ((y1)*width*4)];
-                }
-            }
-            if(y >= height){
-                temp2 = 0;
-            }
-            else{
-                temp2 = temp_texture[x*4 + (y*width*4)];
-            }
-
-//            temp[2] = temp_texture[x + ((y1)*width)]/128.0;
-//            temp[5] = temp_texture[x + (y*width)]/128.0;
-//            temp[8] = temp_texture[x1 + ((y1)*width)]/128.0;
-//            temp[11] = temp_texture[x1 + (y*width)]/128.0;
-
-            temp[2] = temp1;
-            temp[5] = temp2;
-            temp[8] = temp3;
-            temp[11] = temp4;
-
-            glBindBuffer(GL_ARRAY_BUFFER, VBO_1);
-            glBufferData(GL_ARRAY_BUFFER, temp.size() * sizeof(GLfloat), temp.data(), GL_DYNAMIC_DRAW);
+        for (unsigned int i = 0; i < 1; i++) {
 //
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-            glEnableVertexAttribArray(0);
+//            int x = i%width;
+//            int y = i/width;
+//            int x1 = x+1;
+//            int y1 = y+1;
+//            float temp1 = temp_texture[x*4 + ((y1)*width*4)];
+//            float temp2;
+//            float temp3;
+//            float temp4;
+//            if(x >= width){
+//                temp3 = 0;
+//                temp4 = 0;
+//            }
+//            else{
+//                temp4 = temp_texture[x1*4 + (y*width*4)];
+//                if(y >= height){
+//                    temp3 = 0;
+//                }
+//                else{
+//                    temp3 = temp_texture[x1*4 + ((y1)*width*4)];
+//                }
+//            }
+//            if(y >= height){
+//                temp2 = 0;
+//            }
+//            else{
+//                temp2 = temp_texture[x*4 + (y*width*4)];
+//            }
+//
+////            temp[2] = temp_texture[x + ((y1)*width)]/128.0;
+////            temp[5] = temp_texture[x + (y*width)]/128.0;
+////            temp[8] = temp_texture[x1 + ((y1)*width)]/128.0;
+////            temp[11] = temp_texture[x1 + (y*width)]/128.0;
+//
+//            temp[2] = temp1;
+//            temp[5] = temp2;
+//            temp[8] = temp3;
+//            temp[11] = temp4;
+//
+//            glBindBuffer(GL_ARRAY_BUFFER, VBO_1);
+//            glBufferData(GL_ARRAY_BUFFER, temp.size() * sizeof(GLfloat), temp.data(), GL_DYNAMIC_DRAW);
+////
+//            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+//            glEnableVertexAttribArray(0);
             // calculate the model matrix for each object and pass it to shader before drawing
             glm::mat4 model;
             //model = glm::translate(model, cubePositions[0]);
-            model = glm::translate(model, glm::vec3(x*2, y*2, 0));
+            model = glm::translate(model, cubePositions[0]);
             float angle = 20.0f * 0;
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             ourShader.setUniform("model", model);
 
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
             //glDrawArrays(GL_TRIANGLES, 0, 6);
 
         }
