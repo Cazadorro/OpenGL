@@ -280,7 +280,7 @@ int main() {
 
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f,
-                                                200.0f);
+                                                500.0f);
         ourShader.setUniform("projection", projection);
 
         // camera/view transformation
@@ -289,89 +289,28 @@ int main() {
 
         // render boxes
         glBindVertexArray(VAO_1);
+        glm::mat4 model;
+        //model = glm::translate(model, cubePositions[0]);
+        model = glm::translate(model, cubePositions[0]);
+        float angle = 20.0f * 0;
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        ourShader.setUniform("model", model);
 
-        //10
-//        for (unsigned int i = 0; i < 1; i++) {
-//            // calculate the model matrix for each object and pass it to shader before drawing
-//            glm::mat4 model;
-//            model = glm::translate(model, cubePositions[i]);
-//            float angle = 20.0f * i;
-//            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-//            ourShader.setUniform("model", model);
-//
-//            glDrawArrays(GL_TRIANGLES, 0, 6);
-//        }
-        for (unsigned int i = 0; i < 1; i++) {
-//
-//            int x = i%width;
-//            int y = i/width;
-//            int x1 = x+1;
-//            int y1 = y+1;
-//            float temp1 = temp_texture[x*4 + ((y1)*width*4)];
-//            float temp2;
-//            float temp3;
-//            float temp4;
-//            if(x >= width){
-//                temp3 = 0;
-//                temp4 = 0;
-//            }
-//            else{
-//                temp4 = temp_texture[x1*4 + (y*width*4)];
-//                if(y >= height){
-//                    temp3 = 0;
-//                }
-//                else{
-//                    temp3 = temp_texture[x1*4 + ((y1)*width*4)];
-//                }
-//            }
-//            if(y >= height){
-//                temp2 = 0;
-//            }
-//            else{
-//                temp2 = temp_texture[x*4 + (y*width*4)];
-//            }
-//
-////            temp[2] = temp_texture[x + ((y1)*width)]/128.0;
-////            temp[5] = temp_texture[x + (y*width)]/128.0;
-////            temp[8] = temp_texture[x1 + ((y1)*width)]/128.0;
-////            temp[11] = temp_texture[x1 + (y*width)]/128.0;
-//
-//            temp[2] = temp1;
-//            temp[5] = temp2;
-//            temp[8] = temp3;
-//            temp[11] = temp4;
-//
-//            glBindBuffer(GL_ARRAY_BUFFER, VBO_1);
-//            glBufferData(GL_ARRAY_BUFFER, temp.size() * sizeof(GLfloat), temp.data(), GL_DYNAMIC_DRAW);
-////
-//            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-//            glEnableVertexAttribArray(0);
-            // calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model;
-            //model = glm::translate(model, cubePositions[0]);
-            model = glm::translate(model, cubePositions[0]);
-            float angle = 20.0f * 0;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            ourShader.setUniform("model", model);
+        glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
 
-            glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
-            //glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        }
         ourShader_tex.use();
         ourShader_tex.setUniform("projection", projection);
         ourShader_tex.setUniform("view", view);
         glBindVertexArray(VAO_0);
-        for (unsigned int i = 0; i < 1; i++) {
-            // calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model;
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            ourShader_tex.setUniform("model", model);
+        // calculate the model matrix for each object and pass it to shader before drawing
+        
+        model = glm::translate(model, cubePositions[0]);
+        angle = 20.0f * 0;
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        ourShader_tex.setUniform("model", model);
 
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-        }
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
