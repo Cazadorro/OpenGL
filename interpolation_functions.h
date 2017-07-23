@@ -9,6 +9,8 @@ namespace interp {
     double cosine(double a, double b, double t);
 
     double linear(double a, double b, double t);
+
+    double linearFast(double a, double b, double t);
 }
 
 

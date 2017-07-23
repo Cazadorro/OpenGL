@@ -14,4 +14,8 @@ namespace interp {
     double linear(double a, double b, double t) {
         return (1 - t) * a + t * b;
     }
+
+    double linearFast(double a, double b, double t) {
+        return a + t * (b - a);
+    }
 }

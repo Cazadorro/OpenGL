@@ -13,6 +13,7 @@
 namespace ease {
     namespace private_ {
         typedef double (*EaseT)(double);
+
         template<EaseT inFunction, EaseT outFunction>
         double inOut(double value) {
             if (value < 0.5) {
@@ -20,11 +21,28 @@ namespace ease {
             }
             return (outFunction(value * 2 - 1) / 2) + 0.5;
         };
+
+        template<std::intmax_t A>
+        double exponentTemplate(double value) {
+            return (exp(A * value) - 1) / (exp(A) - 1);
+        }
     }
 
     double perlin(double value);
 
     double linear(double value);
+
+    double sineIn(double value);
+
+    double sineOut(double value);
+
+    double sineInOut(double value);
+
+    double circleIn(double value);
+
+    double circleOut(double value);
+
+    double circleInOut(double value);
 
     template<std::size_t N>
     double polynomialIn(double value) {
@@ -33,44 +51,26 @@ namespace ease {
 
     template<std::size_t N>
     double polynomialOut(double value) {
-        private_::inOut(value);
         return 1 - pow(value - 1, N);
     }
 
-    constexpr auto polynomialInOut = private_::inOut<polynomialIn, polynomialOut>;
-//    template<std::size_t N>
-//    double polynomialInOut(double value) {
-//        if (value < 0.5) {
-//            return polynomialIn<N>(value * 2) / 2;
-//        }
-//        return (polynomialOut<N>(value * 2 - 1) / 2) + 0.5;
-//    }
-
-    double sineIn(double value) {
-        return 1 + sin(M_PI / 2 * value - M_PI / 2);
+    template<std::size_t N>
+    double polynomialInOut(double value) {
+        if (value < 0.5) {
+            return polynomialIn<N>(value * 2) / 2;
+        }
+        return (polynomialOut<N>(value * 2 - 1) / 2) + 0.5;
     }
-
-    double sineOut(double value) {
-        return sin(M_PI / 2 * value);
-    }
-
-    double sineInOut(double value) {
-        return (1 + sin(M_PI * value - M_PI / 2)) / 2;
-    }
-
-    template<std::intmax_t A>
-    double exponentTemplate(double value) {
-        return (exp(A * value) - 1) / (exp(A) - 1);
-    }
+    //constexpr auto  polynomialInOut = private_::inOut<polynomialIn, polynomialOut>;
 
     template<std::intmax_t A>
     double exponentIn(double value) {
-        return exponentTemplate<A>(value);
+        return private_::exponentTemplate<A>(value);
     }
 
     template<std::intmax_t A>
     double exponentOut(double value) {
-        return exponentTemplate<-A>(value);
+        return private_::exponentTemplate<-A>(value);
     }
 
     template<std::intmax_t A>
@@ -81,21 +81,7 @@ namespace ease {
         return (exponentOut<A>(value * 2) / 2) + 0.5;
     }
 
-    double circleIn(double value) {
-        return 1 - sqrt(1 - pow(value, 2));
-    }
 
-
-    double circleOut(double value) {
-        return (sqrt(1 - pow((value - 1), 2)));
-    }
-
-    double circleInOut(double value) {
-        if (value < 0.5) {
-            return circleIn(value * 2) / 2;
-        }
-        return (circleOut(value * 2 - 1) / 2) + 0.5;
-    }
 }
 
 

@@ -13,9 +13,13 @@
 #include "simplexnoise.h"
 //#include "gradientnoise.h"
 
-#include "contrib_active_interp.h"
+
 #include "OctaveNoise.h"
 #include "murmurhash3.h"
+#include "ease_functions.h"
+#include "interpolation_functions.h"
+#include "GradientNoiseContributor.h"
+#include "ValueNoiseContributor.h"
 
 #include <iostream>
 
@@ -74,22 +78,22 @@ void accumTextureVals(int i, int j, int width, unsigned char* temp_texture, doub
 }
 
 double accumulateNoise(int min_oct, int max_oct, int i, int j){
-   static OctaveNoise<GradientFixed4Contributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
-            temp_1{GradientFixed4Contributor<MurmurHash3_64bit>(1)};
-//    OctaveNoise<ValueFixedValueContributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
-//            temp_1{ValueFixedValueContributor<MurmurHash3_64bit>(1)};
+   static OctaveNoise<GradientFixed4Contributor<MurmurHash3>, ease::perlin, interp::linear>
+            temp_1{GradientFixed4Contributor<MurmurHash3>(1)};
+//    OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linear>
+//            temp_1{ValueFixedValueContributor<MurmurHash3>(1)};
     double d_noise = 0;
     for(int oct = min_oct; oct <= max_oct; oct++){
-        d_noise+= temp_1.noise(j/256.0f*(1<<oct), i/256.0f*(1<<oct))/(1<<oct);
+        d_noise+= temp_1.noise(j/64.0f*(1<<oct), i/64.0f*(1<<oct))/(1<<oct);
     }
     return d_noise;
 }
 
 void mainfunc(int width, int height, unsigned char* temp_texture, std::vector<float>& verticies, const glm::vec3 scale){
-//    OctaveNoise<GradientFixed4Contributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
-//        temp_1{GradientFixed4Contributor<MurmurHash3_64bit>(1)};
-//    OctaveNoise<ValueFixedValueContributor<MurmurHash3_64bit>, nonLinearActivationFunction, linearInterpolate>
-//            temp_1{ValueFixedValueContributor<MurmurHash3_64bit>(1)};
+//    OctaveNoise<GradientFixed4Contributor<MurmurHash3>, ease::perlin, interp::linear>
+//        temp_1{GradientFixed4Contributor<MurmurHash3>(1)};
+//    OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linear>
+//            temp_1{ValueFixedValueContributor<MurmurHash3>(1)};
 
 
     int max_oct = 17;
