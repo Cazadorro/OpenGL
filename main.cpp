@@ -186,7 +186,7 @@ int main() {
     unsigned char *temp_texture = createTextureMemory(width, height);
     std::vector<int> indices;
     std::vector<float> verticies;
-    glm::vec3 scale = {0.1, 0.1, 0.1};
+    glm::vec3 scale = {0.01, 0.01, 0.01};
     mainfunc(width, height, temp_texture, verticies, scale);
     genindicies(width, height, indices);
 
@@ -304,7 +304,7 @@ int main() {
         ourShader_tex.setUniform("view", view);
         glBindVertexArray(VAO_0);
         // calculate the model matrix for each object and pass it to shader before drawing
-        
+
         model = glm::translate(model, cubePositions[0]);
         angle = 20.0f * 0;
         model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
