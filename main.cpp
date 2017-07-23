@@ -78,9 +78,9 @@ void accumTextureVals(int i, int j, int width, unsigned char* temp_texture, doub
 }
 
 double accumulateNoise(int min_oct, int max_oct, int i, int j){
-   static OctaveNoise<GradientFixed4Contributor<MurmurHash3>, ease::perlin, interp::linear>
-            temp_1{GradientFixed4Contributor<MurmurHash3>(1)};
-//    OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linear>
+   static OctaveNoise<GradientGenContributor<MurmurHash3>, ease::perlin, interp::linearFast>
+            temp_1{GradientGenContributor<MurmurHash3>(1)};
+//   static OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linear>
 //            temp_1{ValueFixedValueContributor<MurmurHash3>(1)};
     double d_noise = 0;
     for(int oct = min_oct; oct <= max_oct; oct++){
@@ -96,7 +96,7 @@ void mainfunc(int width, int height, unsigned char* temp_texture, std::vector<fl
 //            temp_1{ValueFixedValueContributor<MurmurHash3>(1)};
 
 
-    int max_oct = 17;
+    int max_oct = 0;
     int min_oct = 0;
     for( int i = 0; i < height; i++){
         for(int j = 0; j < width; j++){

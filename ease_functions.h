@@ -78,7 +78,7 @@ namespace ease {
         if (value < 0.5) {
             return exponentIn<A>(value * 2) / 2;
         }
-        return (exponentOut<A>(value * 2) / 2) + 0.5;
+        return (exponentOut<A>(value * 2 - 1) / 2) + 0.5;
     }
 
 
