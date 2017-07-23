@@ -3138,7 +3138,7 @@ static stbi_uc*  stbi__resample_row_h_2(stbi_uc *out, stbi_uc *in_near, stbi_uc 
    stbi_uc *input = in_near;
 
    if (w == 1) {
-      // if only one sample, can't do any interpolation
+      // if only one sample, can't do any interpolation_functions
       out[0] = out[1] = input[0];
       return out;
    }
