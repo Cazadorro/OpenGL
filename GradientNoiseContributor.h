@@ -66,9 +66,25 @@ public:
     }
 
     double operator()(std::uint32_t x, std::uint32_t y, double dist_x, double dist_y, std::uint64_t offset = 0) {
-        double value_x = m_prng_hasher.hash32bit2D(x, y, offset)/128.0;
-        double value_y = m_prng_hasher.hash32bit2D(x, y, offset)/128.0;
-        glm::vec2 generated(cosf(value_x*M_PI),sinf(value_x*M_PI));
+        static int temps = 1;
+        double value_V = (m_prng_hasher.hash32bit2D(x, y, offset)&255)/128.0;
+        //double value_y = m_prng_hasher.hash32bit2D(x, y, offset)/128.0;
+        double value_x =(m_prng_hasher.hash32bit2D(x, y, offset)&255)/128.0;
+        value_x -= 1.0;
+        double value_y = sqrt(1 - (value_x*value_x));
+
+        double cost = cosf(value_V*M_PI);
+        double sint = sinf(value_V*M_PI);
+        glm::vec2 generated1(cost,sint);
+        glm::vec2 generated;
+        if(temps % 2 == 0){
+            generated = {value_y, value_x};
+        }
+        else{
+            generated = {value_x, value_y};
+        }
+        temps = (temps + 1)%2;
+        generated = {value_x, value_y};
         double temp = glm::dot(generated * sqrtf(2), {dist_x, dist_y});
 
         return ((temp) * 128.0) + 128.0;

@@ -77,14 +77,13 @@ void accumTextureVals(int i, int j, int width, unsigned char* temp_texture, doub
     temp_texture[j*4 + (i * width * 4) + 3] = (255);
 }
 
-double accumulateNoise(int min_oct, int max_oct, int i, int j){
-   static OctaveNoise<GradientGenContributor<MurmurHash3>, ease::perlin, interp::linearFast>
-            temp_1{GradientGenContributor<MurmurHash3>(1)};
+template<typename OctaveNoise_T>
+double accumulateNoise(int min_oct, int max_oct, int i, int j, OctaveNoise_T& temp_1){
 //   static OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linear>
 //            temp_1{ValueFixedValueContributor<MurmurHash3>(1)};
     double d_noise = 0;
     for(int oct = min_oct; oct <= max_oct; oct++){
-        d_noise+= temp_1.noise(j/64.0f*(1<<oct), i/64.0f*(1<<oct))/(1<<oct);
+        d_noise+= temp_1.noise(j/16.0f*(1<<oct), i/16.0f*(1<<oct))/(1<<oct);
     }
     return d_noise;
 }
@@ -95,18 +94,33 @@ void mainfunc(int width, int height, unsigned char* temp_texture, std::vector<fl
 //    OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linear>
 //            temp_1{ValueFixedValueContributor<MurmurHash3>(1)};
 
-
+    OctaveNoise<GradientGenContributor<MurmurHash3>, ease::perlin, interp::linearFast>
+            temp_1{GradientGenContributor<MurmurHash3>(1)};
+//    OctaveNoise<GradientGenContributor<MurmurHash3>, ease::perlin, interp::linear>
+//            temp_2{GradientGenContributor<MurmurHash3>(1)};
+//    OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linear>
+//            temp_3{ValueFixedValueContributor<MurmurHash3>(1)};
+//    OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linearFast>
+//            temp_4{ValueFixedValueContributor<MurmurHash3>(1)};
     int max_oct = 0;
     int min_oct = 0;
     for( int i = 0; i < height; i++){
         for(int j = 0; j < width; j++){
             double d_noise = 0;
-            d_noise += accumulateNoise(min_oct, max_oct, i, j);
+//            if(j%2 == 0){
+//                d_noise += accumulateNoise(min_oct, max_oct, i, j, temp_4);
+//            }
+//            else{
+//                d_noise += accumulateNoise(min_oct, max_oct, i, j, temp_3);
+//            }
+            d_noise += accumulateNoise(min_oct, max_oct, i, j, temp_1);
+
+
             d_noise*= 0.5;
             accumTextureVals(i, j, width, temp_texture, d_noise);
-            verticies.push_back(float(j)*scale.x);
-            verticies.push_back(float(d_noise)*scale.z);
-            verticies.push_back(float(i)*scale.y);
+            verticies.push_back(float(j)*scale.x); // x
+            verticies.push_back(float(d_noise)*scale.z); // y
+            verticies.push_back(float(i)*scale.y); // z
 
         }
     }
@@ -185,8 +199,8 @@ int main() {
             glm::vec3(-1.3f, 1.0f, -1.5f)
     };
 
-    int width = 1024;
-    int height = 1024;
+    int width = 1<<9;
+    int height = 1<<9;
     unsigned char *temp_texture = createTextureMemory(width, height);
     std::vector<int> indices;
     std::vector<float> verticies;
