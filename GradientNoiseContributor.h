@@ -66,25 +66,14 @@ public:
     }
 
     double operator()(std::uint32_t x, std::uint32_t y, double dist_x, double dist_y, std::uint64_t offset = 0) {
-        static int temps = 1;
         std::uint64_t hash = m_prng_hasher.hash32bit2D(x, y, offset);
-        hash ^= hash >> 32;
-
-        double value_V = (m_prng_hasher.hash32bit2D(x, y, offset)&255)/128.0;
-        //double value_y = m_prng_hasher.hash32bit2D(x, y, offset)/128.0;
-        double value_x =(m_prng_hasher.hash32bit2D(x, y, offset)&255)/128.0;
-
-        std::uint64_t value_h = m_prng_hasher.hash32bit2D(x, y, offset);
+        double value_x = (hash&255)/128.0;
+        //need unused bit to not have actual value influence whether or not it is negative
+        // using 9th bit to determine sign of y value.
+        hash = (hash >> 8)&1;
         value_x -= 1.0;
-        double value_y = sqrt(1 - (value_x*value_x));
-        value_h >>= 8;
-        value_h &= 1;
-
-        double cost = cosf(value_V*M_PI);
-        double sint = sinf(value_V*M_PI);
-        glm::vec2 generated1(cost,sint);
-        double sintt = pow(-1, value_h) * sqrt(1 - (cost*cost));
-        glm::vec2 generated(cost, sintt);
+        double value_y = pow(-1, hash) * sqrt(1 - (value_x*value_x));
+        glm::vec2 generated(value_x, value_y);
         double temp = glm::dot(generated * sqrtf(2), {dist_x, dist_y});
 
         return ((temp) * 128.0) + 128.0;
