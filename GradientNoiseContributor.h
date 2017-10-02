@@ -66,14 +66,39 @@ public:
     }
 
     double operator()(std::uint32_t x, std::uint32_t y, double dist_x, double dist_y, std::uint64_t offset = 0) {
+//        static int temps = 1;
+//        std::uint64_t hash = m_prng_hasher.hash32bit2D(x, y, offset);
+//        hash ^= hash >> 32;
+//
+        double value_V = (m_prng_hasher.hash32bit2D(x, y, offset));
+        //double value_y = m_prng_hasher.hash32bit2D(x, y, offset)/128.0;
         std::uint64_t hash = m_prng_hasher.hash32bit2D(x, y, offset);
-        double value_x = (hash&255)/128.0;
-        //need unused bit to not have actual value influence whether or not it is negative
-        // using 9th bit to determine sign of y value.
+        float value_x = (hash&255)/128.0f;
         hash = (hash >> 8)&1;
         value_x -= 1.0;
-        double value_y = pow(-1, hash) * sqrt(1 - (value_x*value_x));
+        double value_y = pow(-1, hash) * sqrtf(1 - (value_x*value_x));
         glm::vec2 generated(value_x, value_y);
+        double temp = glm::dot(generated * sqrtf(2), {dist_x, dist_y});
+
+        return ((temp) * 128.0) + 128.0;
+    }
+};
+
+template<class PrngHasher>
+class GradientTrigContributor {
+
+    PrngHasher m_prng_hasher;
+    std::uint64_t m_mod_val;
+    std::uint64_t m_and_var;
+public:
+    GradientTrigContributor(std::uint64_t mod_var) {
+        m_mod_val = mod_var;
+    }
+
+    double operator()(std::uint32_t x, std::uint32_t y, double dist_x, double dist_y, std::uint64_t offset = 0) {
+        std::uint64_t hash = m_prng_hasher.hash32bit2D(x, y, offset);
+        float radians = ((hash&255)/128.0f) * M_PI;
+        glm::vec2 generated(cosf(radians), sinf(radians));
         double temp = glm::dot(generated * sqrtf(2), {dist_x, dist_y});
 
         return ((temp) * 128.0) + 128.0;

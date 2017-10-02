@@ -25,7 +25,6 @@ Texture2D::Texture2D(const std::string &texture_path, const TextureViewParams &t
         std::cerr << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
-
 }
 
 Texture2D::Texture2D(const unsigned char *data, const TextureSizeParams &size_params,

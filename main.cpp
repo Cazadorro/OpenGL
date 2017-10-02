@@ -20,7 +20,7 @@
 #include "interpolation_functions.h"
 #include "GradientNoiseContributor.h"
 #include "ValueNoiseContributor.h"
-
+#include "WorleyNoiseContributor.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -94,8 +94,12 @@ void mainfunc(int width, int height, unsigned char* temp_texture, std::vector<fl
 //    OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linear>
 //            temp_1{ValueFixedValueContributor<MurmurHash3>(1)};
 
-    OctaveNoise<GradientGenContributor<MurmurHash3>, ease::perlin, interp::linearFast>
-            temp_1{GradientGenContributor<MurmurHash3>(1)};
+//    OctaveNoise<GradientGenContributor<MurmurHash3>, ease::perlin, interp::linearFast>
+//            temp_1{GradientGenContributor<MurmurHash3>(1)};
+//    OctaveNoise<GradientTrigContributor<MurmurHash3>, ease::perlin, interp::linearFast>
+//            temp_1{GradientTrigContributor<MurmurHash3>(1)};
+    OctaveNoise<WorleyNoiseContributor<MurmurHash3>, ease::perlin, interp::linearFast>
+            temp_1{WorleyNoiseContributor<MurmurHash3>(1)};
 //    OctaveNoise<GradientGenContributor<MurmurHash3>, ease::perlin, interp::linear>
 //            temp_2{GradientGenContributor<MurmurHash3>(1)};
 //    OctaveNoise<ValueFixedValueContributor<MurmurHash3>, ease::perlin, interp::linear>
